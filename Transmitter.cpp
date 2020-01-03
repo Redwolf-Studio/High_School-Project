@@ -6,8 +6,8 @@ IDE software          : Arduino IDE or Atom IDE with PlatformIO
 hardware controller   : Arduino MEGA 2560
 module and sensor     : -LoRa
                         -OLED display (ISP)
-                        -Volt sensor (analog)
-                        -Current sensor (analog)
+                        -Volt sensor 
+                        -Current sensor
 ---------------------------------------------------------------------------
 Developer : 1.Worakan Chantima (Arduino Code)
             2.Siravit Wiangkham (Visual Studio Code)
@@ -33,6 +33,10 @@ Demonstration School University of Phayao
 int disp = 6;
 int updateDISP = 7;
 int OLED_Scene = 0;
+//volt sensor
+float R1 = 27000;
+float R2 = 15000;
+
 boolean BATTService;
 
 DS3231 RTC;
@@ -180,12 +184,12 @@ void SceneBATTERY(float dataV,float dataA,float dataW,unsigned int BattLife) {
   display.setTextColor(YELLOW);
   display.print("A: ");
   display.setTextColor(WHITE);
-  display.print("N/A"); // now no A sensor
+  display.print(dataA); // now no A sensor
   display.setCursor(38,40);
   display.setTextColor(YELLOW);
   display.print("W: ");
   display.setTextColor(WHITE);
-  display.print("N/A"); //now no A sensor
+  display.print(dataW); //now no A sensor
   display.setCursor(38,50);
   display.setTextColor(YELLOW);
   display.print(BattLife);
@@ -380,29 +384,44 @@ void loop() {
 
   //static unsigned long TestReadValueTime = millis();  //for test read valueI/O (DEBUG)
 //Sensor Read
-  int ValueV_Sola   = analogRead(A0);
-  int ValueV_Batt   = analogRead(A2);
-  int ValueV_out    = analogRead(A6);
-  int WindValue     = analogRead(A8);
+  int ValueV_Sola   = analogRead(2);
+  int ValueV_Batt   = analogRead(1);
+  int ValueV_out    = analogRead(7);
+  int WindValue     = analogRead(8);
 
   float ValueA_Sola   = CerSensor1.getCurrent_mA();
   float ValueA_Batt   = CerSensor2.getCurrent_mA();
   float ValueA_out    = CerSensor3.getCurrent_mA();
 //Calculate data
   //sola
-  double V_Sola = ValueV_Sola * (5 / 1023.0);
-  double A_Sola = ValueA_Sola/1000; //mA to A
-  double W_Sola = V_Sola*A_Sola;
+  float Vsola = (ValueV_Sola * 5.00) / 1024.00;
+  float V_Sola = Vsola / (R2/(R1+R2));
+  if(V_Sola < 0.09) {
+    V_Sola = 0;
+  }
+
+  float A_Sola = ValueA_Sola/1000; //mA to A
+  float W_Sola = V_Sola*A_Sola;
 
   //battery
-  double V_Batt = ValueV_Batt*(5.00 / 1023.00);
-  double A_Batt = ValueA_Batt/1000; //mA to A
-  double W_Batt = V_Batt*A_Batt;
+  float Vbatt = (ValueV_Batt * 5.00) / 1024.00;
+  float V_Batt = Vbatt / (R2/(R1+R2));
+  if(V_Batt < 0.09) {
+    V_Batt = 0;
+  }
+
+  float A_Batt = ValueA_Batt/1000; //mA to A
+  float W_Batt = V_Batt*A_Batt;
 
   //output
-  double V_out = ValueV_out * (5 / 1023.0);
-  double A_out = ValueA_out/1000; //mA to A
-  double W_out = V_out*A_out;
+  float Vout = (ValueV_out * 5.00) / 1024.00;
+  float V_out = Vout/(R2/(R1+R2));
+  if(V_Sola < 0.09) {
+    V_Sola = 0;
+  }
+
+  float A_out = ValueA_out/1000; //mA to A
+  float W_out = V_out*A_out;
 
 //Battery Calculate
   float LowBattery = 11.5;
@@ -417,7 +436,7 @@ void loop() {
   }
 
   //Windspeed
-  double WindVolt = WindValue * (5/ 1023.0);
+  double WindVolt = WindValue * (5.00/ 1023.00);
   double WindSpeed = WindVolt * 2.2628;
 
 
