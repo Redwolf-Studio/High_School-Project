@@ -307,11 +307,11 @@ void SceneWindSpeed(float VoltWind, float SpeedWind) {
   display.print(SpeedWind);
 
   display.drawBitmap(3, 20, WindICON, 32, 32, WHITE, BLACK);
-}//sceen4
+}//Show wind speed
 
 void SaveDisplay() {
   display.fillScreen(BLACK);
-}//sceen3
+}//SAVE Display
 
 float mapFloat(float value, float fromLow, float fromHigh, float toLow, float toHigh) {
   return (value - fromLow) * (toHigh - toLow) / (fromHigh - fromLow) + toLow;
@@ -395,7 +395,7 @@ void loop() {
 //Calculate data
   //sola
   float Vsola = (ValueV_Sola * 5.00) / 1024.00;
-  float V_Sola = Vsola / (R2/(R1+R2));
+  float V_Sola = (Vsola / (R2/(R1+R2))) - 0.21;
   if(V_Sola < 0.09) {
     V_Sola = 0;
   }
@@ -405,7 +405,7 @@ void loop() {
 
   //battery
   float Vbatt = (ValueV_Batt * 5.00) / 1024.00;
-  float V_Batt = Vbatt / (R2/(R1+R2));
+  float V_Batt = (Vbatt / (R2/(R1+R2))) - 1.38;
   if(V_Batt < 0.09) {
     V_Batt = 0;
   }
@@ -415,7 +415,7 @@ void loop() {
 
   //output
   float Vout = (ValueV_out * 5.00) / 1024.00;
-  float V_out = Vout/(R2/(R1+R2));
+  float V_out = (Vout / (R2/(R1+R2))) - 1.84;
   if(V_Sola < 0.09) {
     V_Sola = 0;
   }
